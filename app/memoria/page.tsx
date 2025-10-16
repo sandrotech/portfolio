@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Trash2, Edit3, PlusCircle, Save } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
 
 type Registro = {
   id: number;
@@ -29,7 +28,11 @@ export default function MemoriaPage() {
   const [novo, setNovo] = useState(false);
   const [editando, setEditando] = useState<Registro | null>(null);
   const [form, setForm] = useState({ titulo: "", categoria: "", conteudo: "" });
-  const { toast } = useToast();
+
+  const [alerta, setAlerta] = useState<{ tipo: "success" | "error" | null; msg: string }>({
+    tipo: null,
+    msg: "",
+  });
 
   useEffect(() => {
     const dados = localStorage.getItem("memorias");
@@ -41,35 +44,29 @@ export default function MemoriaPage() {
   }, [registros]);
 
   const handleSalvar = () => {
-    if (!form.titulo.trim()) return;
+    if (!form.titulo.trim()) {
+      setAlerta({ tipo: "error", msg: "Informe um título para salvar." });
+      setTimeout(() => setAlerta({ tipo: null, msg: "" }), 3000);
+      return;
+    }
 
     if (editando) {
       setRegistros((prev) =>
         prev.map((r) => (r.id === editando.id ? { ...form, id: r.id } : r))
       );
-      toast({
-        title: "Registro atualizado!",
-        description: "As alterações foram salvas com sucesso.",
-      });
+      setAlerta({ tipo: "success", msg: "Registro atualizado com sucesso!" });
       setEditando(null);
     } else {
       setRegistros((prev) => [
         ...prev,
-        {
-          id: Date.now(),
-          titulo: form.titulo,
-          categoria: form.categoria,
-          conteudo: form.conteudo,
-        },
+        { id: Date.now(), titulo: form.titulo, categoria: form.categoria, conteudo: form.conteudo },
       ]);
-      toast({
-        title: "Registro salvo!",
-        description: "Sua memória técnica foi atualizada com sucesso.",
-      });
+      setAlerta({ tipo: "success", msg: "Registro salvo com sucesso!" });
     }
 
     setForm({ titulo: "", categoria: "", conteudo: "" });
     setNovo(false);
+    setTimeout(() => setAlerta({ tipo: null, msg: "" }), 3000);
   };
 
   const handleEditar = (r: Registro) => {
@@ -80,10 +77,8 @@ export default function MemoriaPage() {
 
   const handleExcluir = (id: number) => {
     setRegistros((prev) => prev.filter((r) => r.id !== id));
-    toast({
-      title: "Registro removido",
-      description: "O item foi deletado da memória.",
-    });
+    setAlerta({ tipo: "success", msg: "Registro removido da memória." });
+    setTimeout(() => setAlerta({ tipo: null, msg: "" }), 3000);
   };
 
   const filtrados = registros.filter(
@@ -104,7 +99,23 @@ export default function MemoriaPage() {
           Memória Técnica
         </motion.h1>
 
-        {/* Barra de busca + botão novo */}
+        <AnimatePresence>
+          {alerta.tipo && (
+            <motion.div
+              key={alerta.msg}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className={`mb-6 text-center p-3 rounded-lg font-medium ${alerta.tipo === "success"
+                  ? "bg-emerald-600/20 text-emerald-300 border border-emerald-700"
+                  : "bg-red-600/20 text-red-300 border border-red-700"
+                }`}
+            >
+              {alerta.msg}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
           <Input
             placeholder="Buscar por título, categoria ou conteúdo..."
@@ -160,7 +171,6 @@ export default function MemoriaPage() {
           </Dialog>
         </div>
 
-        {/* Listagem */}
         {filtrados.length === 0 ? (
           <p className="text-center text-gray-500 mt-20">
             Nenhum registro encontrado.
