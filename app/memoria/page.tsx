@@ -1,224 +1,101 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Trash2, Edit3, PlusCircle, Save } from "lucide-react";
+import { Save, Trash2 } from "lucide-react";
 
 type Registro = {
   id: number;
   titulo: string;
-  categoria: string;
   conteudo: string;
 };
 
 export default function MemoriaPage() {
   const [registros, setRegistros] = useState<Registro[]>([]);
-  const [busca, setBusca] = useState("");
-  const [novo, setNovo] = useState(false);
-  const [editando, setEditando] = useState<Registro | null>(null);
-  const [form, setForm] = useState({ titulo: "", categoria: "", conteudo: "" });
-
-  const [alerta, setAlerta] = useState<{ tipo: "success" | "error" | null; msg: string }>({
-    tipo: null,
-    msg: "",
-  });
+  const [novo, setNovo] = useState({ titulo: "", conteudo: "" });
 
   useEffect(() => {
-    const dados = localStorage.getItem("memorias");
-    if (dados) setRegistros(JSON.parse(dados));
+    const salvos = localStorage.getItem("memoria");
+    if (salvos) setRegistros(JSON.parse(salvos));
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("memorias", JSON.stringify(registros));
+    localStorage.setItem("memoria", JSON.stringify(registros));
   }, [registros]);
 
   const handleSalvar = () => {
-    if (!form.titulo.trim()) {
-      setAlerta({ tipo: "error", msg: "Informe um título para salvar." });
-      setTimeout(() => setAlerta({ tipo: null, msg: "" }), 3000);
-      return;
-    }
-
-    if (editando) {
-      setRegistros((prev) =>
-        prev.map((r) => (r.id === editando.id ? { ...form, id: r.id } : r))
-      );
-      setAlerta({ tipo: "success", msg: "Registro atualizado com sucesso!" });
-      setEditando(null);
-    } else {
-      setRegistros((prev) => [
-        ...prev,
-        { id: Date.now(), titulo: form.titulo, categoria: form.categoria, conteudo: form.conteudo },
-      ]);
-      setAlerta({ tipo: "success", msg: "Registro salvo com sucesso!" });
-    }
-
-    setForm({ titulo: "", categoria: "", conteudo: "" });
-    setNovo(false);
-    setTimeout(() => setAlerta({ tipo: null, msg: "" }), 3000);
+    if (!novo.titulo) return;
+    setRegistros([...registros, { ...novo, id: Date.now() }]);
+    setNovo({ titulo: "", conteudo: "" });
   };
 
-  const handleEditar = (r: Registro) => {
-    setEditando(r);
-    setForm(r);
-    setNovo(true);
-  };
-
-  const handleExcluir = (id: number) => {
-    setRegistros((prev) => prev.filter((r) => r.id !== id));
-    setAlerta({ tipo: "success", msg: "Registro removido da memória." });
-    setTimeout(() => setAlerta({ tipo: null, msg: "" }), 3000);
-  };
-
-  const filtrados = registros.filter(
-    (r) =>
-      r.titulo.toLowerCase().includes(busca.toLowerCase()) ||
-      r.categoria.toLowerCase().includes(busca.toLowerCase()) ||
-      r.conteudo.toLowerCase().includes(busca.toLowerCase())
-  );
+  const handleExcluir = (id: number) =>
+    setRegistros(registros.filter((r) => r.id !== id));
 
   return (
-    <section className="min-h-screen bg-neutral-950 text-white py-20 px-4">
-      <div className="container mx-auto">
-        <motion.h1
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-4xl font-bold text-center mb-10 text-accent"
-        >
+    <section className="min-h-screen bg-gradient-to-br from-[#050505] via-[#0a0a0a] to-[#101010] text-white px-6 py-24">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="max-w-5xl mx-auto"
+      >
+        <h1 className="text-4xl font-bold mb-6 text-cyan-400 text-center">
           Memória Técnica
-        </motion.h1>
+        </h1>
 
-        <AnimatePresence>
-          {alerta.tipo && (
-            <motion.div
-              key={alerta.msg}
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className={`mb-6 text-center p-3 rounded-lg font-medium ${alerta.tipo === "success"
-                  ? "bg-emerald-600/20 text-emerald-300 border border-emerald-700"
-                  : "bg-red-600/20 text-red-300 border border-red-700"
-                }`}
-            >
-              {alerta.msg}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <Input
-            placeholder="Buscar por título, categoria ou conteúdo..."
-            className="w-full sm:w-1/2 bg-neutral-900 border-neutral-800 text-gray-200"
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
+            placeholder="Título"
+            className="bg-white/5 border-white/10 text-white"
+            value={novo.titulo}
+            onChange={(e) => setNovo({ ...novo, titulo: e.target.value })}
           />
-          <Dialog open={novo} onOpenChange={setNovo}>
-            <DialogTrigger asChild>
-              <Button className="bg-accent text-black hover:opacity-90">
-                <PlusCircle className="mr-2 h-4 w-4" /> Novo Registro
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="bg-neutral-900 border-neutral-800 text-white max-w-lg">
-              <DialogHeader>
-                <DialogTitle>
-                  {editando ? "Editar Registro" : "Novo Registro"}
-                </DialogTitle>
-              </DialogHeader>
-              <div className="space-y-3 mt-4">
-                <Input
-                  placeholder="Título"
-                  className="bg-neutral-950 border-neutral-800 text-gray-100"
-                  value={form.titulo}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, titulo: e.target.value }))
-                  }
-                />
-                <Input
-                  placeholder="Categoria (ex: Docker, Django, Linux...)"
-                  className="bg-neutral-950 border-neutral-800 text-gray-100"
-                  value={form.categoria}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, categoria: e.target.value }))
-                  }
-                />
-                <Textarea
-                  placeholder="Conteúdo, comandos ou notas..."
-                  className="bg-neutral-950 border-neutral-800 text-gray-100 h-40"
-                  value={form.conteudo}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, conteudo: e.target.value }))
-                  }
-                />
-                <div className="flex justify-end">
-                  <Button onClick={handleSalvar} className="bg-accent text-black">
-                    <Save className="mr-2 h-4 w-4" />
-                    Salvar
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button onClick={handleSalvar} className="bg-cyan-500 text-black">
+            <Save className="w-4 h-4 mr-1" /> Salvar
+          </Button>
         </div>
 
-        {filtrados.length === 0 ? (
-          <p className="text-center text-gray-500 mt-20">
-            Nenhum registro encontrado.
-          </p>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtrados.map((r) => (
-              <motion.div
-                key={r.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                <Card className="bg-neutral-900/70 border-neutral-800 hover:border-accent transition h-full flex flex-col group">
-                  <CardHeader>
-                    <h2 className="text-lg font-semibold text-accent mb-1 group-hover:text-white transition">
-                      {r.titulo}
-                    </h2>
-                    <p className="text-gray-400 text-sm">{r.categoria}</p>
-                  </CardHeader>
-                  <CardContent className="flex-1">
-                    <pre className="text-gray-300 text-sm whitespace-pre-wrap font-mono bg-neutral-950 p-3 rounded-lg border border-neutral-800 group-hover:border-accent/30 transition">
-                      {r.conteudo}
-                    </pre>
-                  </CardContent>
-                  <div className="flex justify-end gap-2 p-4 border-t border-neutral-800">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="border-neutral-700 text-gray-300 hover:text-accent"
-                      onClick={() => handleEditar(r)}
-                    >
-                      <Edit3 className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="border-neutral-700 text-gray-300 hover:text-red-500"
-                      onClick={() => handleExcluir(r.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        )}
-      </div>
+        <Textarea
+          placeholder="Conteúdo / comandos / anotações..."
+          className="bg-white/5 border-white/10 text-gray-200 mb-8 min-h-[120px]"
+          value={novo.conteudo}
+          onChange={(e) => setNovo({ ...novo, conteudo: e.target.value })}
+        />
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {registros.map((r) => (
+            <motion.div
+              key={r.id}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Card className="bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl shadow-[0_0_20px_rgba(0,255,255,0.05)] group">
+                <CardContent className="p-5">
+                  <h2 className="text-lg font-semibold mb-2 text-cyan-300">
+                    {r.titulo}
+                  </h2>
+                  <p className="text-gray-400 text-sm whitespace-pre-wrap mb-4">
+                    {r.conteudo}
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleExcluir(r.id)}
+                    className="border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10"
+                  >
+                    <Trash2 className="w-4 h-4 mr-1" /> Excluir
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
     </section>
   );
 }

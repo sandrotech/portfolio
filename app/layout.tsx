@@ -16,10 +16,22 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <body className="bg-background text-foreground antialiased selection:bg-accent/20 selection:text-accent">
+      <body className="bg-background text-foreground antialiased relative overflow-hidden selection:bg-accent/20 selection:text-accent">
+        {/* Fundo animado com código */}
+        <div className="absolute inset-0 z-0 opacity-[0.05] text-[12px] font-mono text-cyan-300 whitespace-pre leading-relaxed animate-scrollCode select-none pointer-events-none">
+          {`const dev = {
+  name: "Alessandro Santos",
+  stack: ["Python", "Django", "Next.js", "DevOps"],
+  focus: "Soluções integradas e automação inteligente",
+  motto: "Code. Create. Connect."
+};`}
+        </div>
+
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <Navbar />
-          <PageWrapper>{children}</PageWrapper>
+          <main className="relative z-10 px-4 md:px-8 pt-6 pb-20 md:pb-10 md:ml-[90px] lg:ml-[110px] flex justify-center items-center min-h-screen transition-all duration-300">
+            <PageWrapper>{children}</PageWrapper>
+          </main>
           <Footer />
         </ThemeProvider>
       </body>
