@@ -1,57 +1,52 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog"
+import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 
 const tutoriais = [
     {
-        titulo: "Deploy Django com Gunicorn e Nginx",
-        texto: "Guia passo a passo para colocar seu projeto Django em produção no Ubuntu.",
+        titulo: "Como configurar o ambiente Django + Next.js",
+        resumo: "Integração completa entre backend e frontend com deploy via CapRover.",
+        link: "#",
     },
     {
-        titulo: "Adicionar HTTPS com Let's Encrypt",
-        texto: "Aprenda a instalar e renovar certificados SSL grátis com Certbot.",
+        titulo: "Criando API com FastAPI e autenticação JWT",
+        resumo: "Guia prático para construir uma API moderna com segurança e performance.",
+        link: "#",
     },
-    {
-        titulo: "Usando GitHub Actions",
-        texto: "Automatize testes e deploys com GitHub Actions.",
-    },
-]
+];
 
 export default function BlogSection() {
     return (
-        <section id="blog" className="py-16 bg-black text-white">
-            <div className="container mx-auto px-4">
-                <h2 className="text-center text-3xl font-bold mb-8 text-accent">
-                    Blog Técnico
-                </h2>
-                <p className="text-center text-gray-400 mb-12">
-                    Tutoriais, dicas e comandos úteis para desenvolvimento e deploy.
-                </p>
+        <section className="grid gap-6 sm:grid-cols-2">
+            {tutoriais.map((item, i) => (
+                <Card
+                    key={i}
+                    className="bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 transition-all duration-300"
+                >
+                    <CardContent className="p-6">
+                        <h3 className="text-lg font-semibold text-cyan-400 mb-2">
+                            {item.titulo}
+                        </h3>
+                        <p className="text-gray-300 text-sm mb-4">{item.resumo}</p>
 
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {tutoriais.map((t, i) => (
-                        <Dialog key={i}>
+                        <Dialog>
                             <DialogTrigger asChild>
-                                <Card className="bg-neutral-900 border-neutral-800 hover:border-accent transition cursor-pointer">
-                                    <CardHeader>
-                                        <CardTitle className="text-lg text-accent">
-                                            {t.titulo}
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-gray-400 text-sm">{t.texto}</p>
-                                    </CardContent>
-                                </Card>
+                                <button className="px-3 py-1 text-sm bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-300 rounded-md transition">
+                                    Ler mais
+                                </button>
                             </DialogTrigger>
-                            <DialogContent className="bg-neutral-950 text-white border-neutral-800 max-w-3xl">
-                                <h3 className="text-2xl font-semibold mb-4">{t.titulo}</h3>
-                                <p>{t.texto}</p>
+                            <DialogContent className="bg-black/90 border border-white/10 text-white">
+                                <h2 className="text-xl font-semibold mb-2">{item.titulo}</h2>
+                                <p>
+                                    Este conteúdo será exibido dentro do modal de leitura
+                                    detalhada.
+                                </p>
                             </DialogContent>
                         </Dialog>
-                    ))}
-                </div>
-            </div>
+                    </CardContent>
+                </Card>
+            ))}
         </section>
-    )
+    );
 }

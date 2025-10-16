@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
 
 export default function Hero() {
     return (

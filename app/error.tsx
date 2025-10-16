@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import Link from "next/link";
 
 export default function Error() {
     return (
@@ -10,7 +11,7 @@ export default function Error() {
                 Ocorreu um problema no servidor. Já estamos verificando!
             </p>
             <Button asChild>
-                <a href="/">Voltar para Home</a>
+                <Link href="/" className="text-cyan-400">Voltar para Home</Link>
             </Button>
         </div>
     )
